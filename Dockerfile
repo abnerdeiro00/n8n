@@ -2,15 +2,16 @@ FROM n8nio/n8n:latest
 
 USER root
 
-# Instalar dependências
+# Atualizar e instalar dependências básicas
 RUN apk update && \
     apk add --no-cache curl iptables ip6tables bash
 
-# Adicionar repositório da Tailscale para Alpine
-RUN echo "https://pkgs.tailscale.com/stable/alpine/v3.22" >> /etc/apk/repositories
+# Garantir que o repositório “community” esteja habilitado (Alpine)
+RUN setup-apkrepos -c -1
 
-# Instalar Tailscale
-RUN apk update && apk add --no-cache tailscale
+# Instalar Tailscale via apk
+RUN apk update && \
+    apk add --no-cache tailscale
 
 # Iniciar tailscaled + n8n juntos
 CMD tailscaled --state=/data/tailscale.state & \
