@@ -2,20 +2,17 @@ FROM n8nio/n8n:latest
 
 USER root
 
-# Instalar dependências necessárias
+# Instalar dependências
 RUN apk update && \
-    apk add --no-cache \
-        curl \
-        iptables \
-        ip6tables \
-        bash
+    apk add --no-cache curl iptables ip6tables bash
 
-# Instalar Tailscale (versão Alpine)
-RUN curl -fsSL https://pkgs.tailscale.com/stable/alpine/tailscale-stable.apk -o /tmp/tailscale.apk && \
-    apk add --allow-untrusted /tmp/tailscale.apk && \
-    rm /tmp/tailscale.apk
+# Adicionar repositório da Tailscale para Alpine
+RUN echo "https://pkgs.tailscale.com/stable/alpine/v3.22" >> /etc/apk/repositories
 
-# Rodar tailscaled + n8n juntos
+# Instalar Tailscale
+RUN apk update && apk add --no-cache tailscale
+
+# Iniciar tailscaled + n8n juntos
 CMD tailscaled --state=/data/tailscale.state & \
     sleep 3 && \
     tailscale up --authkey=${TS_AUTHKEY} --hostname="n8n-railway" --accept-routes --accept-dns=false && \
