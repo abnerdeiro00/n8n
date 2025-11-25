@@ -1,30 +1,12 @@
-FROM node:18-bookworm
+FROM n8nio/n8n:latest
 
-USER root
+# Railway define a variável PORT automaticamente; o n8n precisa usar N8N_PORT
+ENV N8N_PORT=${PORT}
+ENV N8N_HOST=0.0.0.0
+ENV N8N_PROTOCOL=http
 
-# Instalar dependências essenciais
-RUN apt-get update && apt-get install -y \
-    curl \
-    iptables \
-    iproute2 \
-    gnupg \
-    sudo
+# Desabilita o editor externo
+ENV N8N_EDITOR_BASE_URL=""
 
-# Instalar Tailscale (Bookworm)
-RUN curl -fsSL https://pkgs.tailscale.com/stable/debian/bookworm.noarmor.gpg \
-    | gpg --dearmor -o /usr/share/keyrings/tailscale-archive-keyring.gpg && \
-    curl -fsSL https://pkgs.tailscale.com/stable/debian/bookworm.tailscale-keyring.list \
-    | tee /etc/apt/sources.list.d/tailscale.list && \
-    apt-get update && apt-get install -y tailscale
-
-# Instalar n8n globalmente
-RUN npm install -g n8n
-
-# Criar diretório de dados
-RUN mkdir -p /data
-
-# Rodar tailscale + n8n
-CMD tailscaled --state=/data/tailscale.state & \
-    sleep 3 && \
-    tailscale up --authkey=${TS_AUTHKEY} --hostname="n8n-railway" --accept-routes --accept-dns=false && \
-    n8n
+# Executa o N8N diretamente
+CMD ["n8n"]
