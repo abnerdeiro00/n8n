@@ -6,12 +6,13 @@ USER root
 RUN apk update && \
     apk add --no-cache curl iptables ip6tables bash
 
-# Garantir que o repositório “community” esteja habilitado (Alpine)
-RUN setup-apkrepos -c -1
+# Adicionar manualmente repositório da Tailscale para Alpine
+RUN echo "https://pkgs.tailscale.com/stable/alpine/v3.22/main" >> /etc/apk/repositories && \
+    echo "https://pkgs.tailscale.com/stable/alpine/v3.22/community" >> /etc/apk/repositories && \
+    apk update
 
-# Instalar Tailscale via apk
-RUN apk update && \
-    apk add --no-cache tailscale
+# Instalar Tailscale
+RUN apk add --no-cache tailscale
 
 # Iniciar tailscaled + n8n juntos
 CMD tailscaled --state=/data/tailscale.state & \
